@@ -1,3 +1,2 @@
-else:
-        #     domain2 = 'https://' + row['domain']
-        #     favicon_url = get_favicon(domain2)
+CREATE INDEX IF NOT EXISTS favicons_hash_idx ON favicons (image_hash);
+CREATE UNIQUE INDEX IF NOT EXISTS favicons_domain_idx ON favicons (domain);
