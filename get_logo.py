@@ -1,4 +1,4 @@
-import os, requests, pandas as pd, urllib3, time, cv2
+import os, requests, pandas as pd, urllib3, time, cairosvg, psycopg2
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from fake_useragent import UserAgent # type: ignore
@@ -34,6 +34,20 @@ def get_favicon(url):
 
     except:
         return None
+    
+
+def download_convert_favicon(favicon_url):
+    try:
+        response = requests.get(favicon_url, stream=True)
+        response.raise_for_status()
+        png_data = response.content
+        svg_data = cairosvg.svg2svg(bytestring=png_data)
+        return svg_data
+
+    except:
+        print("Error")
+        return None
+
 
 def fetch_favicon(domain):
     domain1 = 'https://www.' + domain
