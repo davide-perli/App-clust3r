@@ -1,47 +1,31 @@
-https://www.toyota-buchreiter-eisenstadt.at/fav/apple-touch-icon.png
-https://www.stanbicbank.co.zw/static_file/assets/favicons/favicon.ico
-https://www.plameco-hannover.de/favicon.ico
-https://www.ovb.ro/favicon.ico
-https://www.freseniusmedicalcare.ca/assets/images/favicon/apple-touch-icon-57x57.png
-https://www.astrazeneca.ua/etc/designs/az/img/favicons/icon-favicon.ico
-https://reclique-core-steuben.s3.amazonaws.com/wp-content/uploads/2021/08/31114053/cropped-y_logo_y-32x32.png
-https://www.lidl.com.cy/cdn/assets/logos/1.0.1/lidl-logo-shop-cdn.svg
-https://www.assets.mazda-autohaus.de/assets/img/favicons/apple-icon.png
-https://www.autosecuritas-ct-seysses.fr/public/img/showcase/favicons/apple-touch-icon.png
-https://www.ibc-solar.jp/config/Resources/favicons/apple-touch-icon.png
-https://www.wurth-international.com/app/uploads/fbrfg/apple-touch-icon.png
-https://www.ebay.cn/favicon.ico
-https://www.synlab.com.tr/templates/synlab/favicon.ico
-https://www.kia-moeller-wunstorf.de/etc.clientlibs/settings/wcm/designs/eut/clientlib/resources/rbr/rbr-fav.ico
-https://f.fcdn.app/assets/commerce/www.crocs.com.uy/8656_f748/public/web/favicon.ico
+Error converting favicon for ymcasteuben.org
+Error converting favicon for ovb.ro
+Error converting favicon for plameco-hannover.de
+Error converting favicon for kia-moeller-wunstorf.de
+Error converting favicon for greatplacetowork.com.bo
+Error converting favicon for astrazeneca.ua
+Error fetching favicon for ebay.cn
+Error fetching favicon for toyota-buchreiter-eisenstadt.at
+Error converting favicon for autosecuritas-ct-seysses.fr
+Error converting favicon for mazda-autohaus-hellwig-hoyerswerda.de
+Error fetching favicon for stanbicbank.co.zw
+Error fetching favicon for ibc-solar.jp
+Error fetching favicon for nobleprog.mx
 Error fetching favicon for tupperware.at
-https://www.spitex-wasseramt.ch/img/spitex2014/default/favicon.ico
-https://www.bakertilly.lu/apple-touch-icon.png
-https://www.greatplacetowork.com.bo/hubfs/favicon-32x32.png
-https://www.nobleprog.mx/favicon.png
-https://mosaic01.ztat.net/zds/assets/favicon/zalando-app-touch-icon-180-lagom-v2.png
-https://www.deheus.com.vn/Assets/favicons/apple-touch-icon.png
-https://www.renault-tortosa.es/img_src/renault-logo-2023.svg
-https://www.ebayglobalshipping.com/themes/custom/custom_barrio/app/images/favicon.ico
-https://www.veolia.com.ru/themes/custom/veo_site/src/assets/icons/favicon.ico
-https://www.baywa-re.es/typo3conf/ext/gg_base/Resources/Public/country/dist/img/favicons/favicon.ico
-https://www.aamcoanaheim.net/images/IconAAMCOnew.ico
-https://www.aamcoconyersga.com/images/IconAAMCOnew.ico
-https://oil-testing.de/wp-content/uploads/2021/07/cropped-BV_Logo_Grey_Pantone_404-removebg-preview-1-e1625230190692-32x32.png
-https://julis-sh.de/wp-content/uploads/2022/06/220605_Julia_Favicon_148-150x150.png
-https://ccusa.co.nz/wp-content/uploads/2023/02/elementor/thumbs/favicon_noGlobeRound-qajrjo512ai2oh7ixchhx7bnlqb2o6o9g5aqgvfk38.png
-https://www.engie.co.uk/wp-content/uploads/2025/01/cropped-Royal-Highness-King-Charles-III-on-9-May-1984-2-32x32.png
-https://www.europa-union-sachsen-anhalt.de/typo3conf/ext/skeud/Resources/Public/Icons/eud.ico
-https://avis.cr/favico.ico
-https://www.aamcoseguin.com/wp-content/uploads/2018/11/cropped-AAMCO_favicon-192x192.png 
-https://www.assets.mazda-autohaus.de/assets/img/favicons/apple-icon.png
-https://www.pirtek.be/wp-content/uploads/2021/03/PIR_rgb_favicon-32.png
-https://affidea.ba/wp-content/themes/affidea/assets/img/favicon.png
-https://wurthsaudi.com/assets/img/favicon1.png
-https://www.bakertilly.es/apple-touch-icon.png
-https://cafelasmargaritas.es/wp-content/uploads/2023/12/cropped-ico-32x32.avif
-https://www.unicharm.com.br/content/dam/sites/www_unicharm_com_br/images/common/favicon.png
-https://www.allianz.nl/content/dam/onemarketing/system/favicon/AZ_Logo_eagle.png/_jcr_content/renditions/cq5dam.web.180.180.png
-https://www.menschenfuermenschen.at/favicon-96x96.png
-https://new-website-file.s3.ap-southeast-1.amazonaws.com/images/20211210/180197e5dfdfeee4e74ac04365df3b65.png
-https://www.berlitz-augsburg.de/favicon-32x32.png?v=a9801145592d60e986594599316ccd3b
+Error fetching favicon for freseniusmedicalcare.ca
+Error fetching favicon for lidl.com.cy
+Error fetching favicon for synlab.com.tr
+Error fetching favicon for crocs.com.uy
+Error fetching favicon for spitex-wasseramt.ch
+Error fetching favicon for wurth-international.com
+Error fetching favicon for ebayglobalshipping.com
+Error fetching favicon for engie.co.uk
+Error fetching favicon for zalando.cz
+Error fetching favicon for ccusa.co.nz
+Error fetching favicon for aamcoanaheim.net
+Error fetching favicon for renault-tortosa.es
+Error fetching favicon for avis.cr
+Error fetching favicon for bakertilly.lu
+Error fetching favicon for europa-union-sachsen-anhalt.de
+Error fetching favicon for mazda-autohaus-kaschmieder-waren.de
+Error fetching favicon for wurthsaudi.com
