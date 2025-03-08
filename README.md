@@ -20,5 +20,5 @@
      ```
 
 4. **Improving Performance**:
-   - Since fetching favicons from all sites takes too long, use a thread pool for multithreading the task.
+   - Since fetching favicons from all sites takes too long, use a ThreadPoolExecutor for parallelism on the task.
    - Utilize 20 virtual cores (in this case) to achieve 20x performance improvement.
