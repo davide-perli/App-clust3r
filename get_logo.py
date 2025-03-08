@@ -1,12 +1,8 @@
-import os
-import requests
-import pandas as pd
+import os, requests, pandas as pd, urllib3, time, cv2
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from fake_useragent import UserAgent # type: ignore
-import urllib3
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
 
 start_time = time.time()
 
