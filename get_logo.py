@@ -16,10 +16,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_favicon(url):
     try:
-        # Fetch the HTML content of the webpage
+
         ua = UserAgent()
         headers = {'User-Agent': ua.random}
-        response = requests.get(url, headers=headers, verify = False, timeout = 5)
+        response = requests.get(url, headers = headers, verify = False, timeout = 5)
         response.raise_for_status()
 
         # Parse the HTML to find <link rel="icon" or rel="shortcut icon">
