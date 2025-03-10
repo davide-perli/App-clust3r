@@ -11,11 +11,14 @@ import cairosvg
 
 from io import BytesIO
 
+from pillow_avif import AvifImagePlugin
+
 start_time = time.time()
 
 # source enviroment/bin/activate
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 def get_favicon(url):
     try:
@@ -26,17 +29,49 @@ def get_favicon(url):
 
         # Parse the HTML to find <link rel="icon" or rel="shortcut icon">
         soup = BeautifulSoup(response.text, 'html.parser')
-        link = soup.find("link", rel=lambda x: x and "icon" in x)
+        links = soup.find_all("link", rel=lambda x: x and "icon" in x)
 
         # Return the href attribute if found, otherwise fallback to /favicon.ico
-        if link and link.get('href'):
-            return urljoin(url, link.get('href'))
-        else:
-            return f"{urlparse(url).scheme}://{urlparse(url).netloc}/favicon.ico"
+        for link in links:
+            if link and link.get('href'):
+                ua = UserAgent()
+                headers = {'User-Agent': ua.random}
+                favicon_url =  urljoin(url, link.get('href'))
+    
+                head_response = requests.head(favicon_url, headers=headers, verify=False, timeout=5)
+                
+                if head_response.status_code == 200:
+                    if 'Content-Type' in head_response.headers and head_response.headers['Content-Type'].startswith('image/'):
+                        return favicon_url         
+
+        
+        # else:
+
+        #     common_paths = [
+        #         '/favicon.png',
+        #         '/favicon.svg',
+        #         '/favicon.ico',
+        #         '/favicon.jpg',
+        #         '/favicon.avif',
+        #         '/img/favicon.ico',
+        #         '/static/favicon.ico',
+        #         '/images/favicon.ico'
+        #     ]
+        #     for path in common_paths:
+        #         headers = {'User-Agent': ua.random}
+        #         favicon_url = urljoin(url, path)
+        #         head_response = requests.head(favicon_url, headers=headers, verify=False, timeout=5)
+        #         if head_response.status_code == 200:
+        #             return favicon_url  
+
+        #print(f"Could not find favicon for {url}") 
+        return None
+        
     except KeyboardInterrupt:
         print("\nInterrupted! Exiting...")
         exit(0)  # Force full stop
-    except:
+    except Exception as e:
+        #print(f"Error fetching favicon for {url}: {e}")
         return None
     
 
@@ -44,15 +79,15 @@ def download_convert_favicon(favicon_url):
     try:
         ua = UserAgent()
         headers = {'User-Agent': ua.random}
-        response = requests.get(favicon_url, headers=headers, stream=True, verify=False, timeout=5)
+        response = requests.get(favicon_url, headers = headers, verify = False)
         
         # Check if response contains valid image data
         content_type = response.headers.get('Content-Type', '')
-        if not content_type.startswith('image/') and content_type not in ['image/svg+xml', 'image/x-icon', 'image/avif']:
-            print(f"Invalid content type for {favicon_url}")
-            return None
+        # if not content_type.startswith('image/') and content_type not in ['image/png', 'image/svg+xml', 'image/x-icon', 'image/avif']:
+        #     print(f"Invalid content type for {favicon_url}")
+        #     return None
             
-        response.raise_for_status()
+        # response.raise_for_status()
         
         # Handle SVG files
         if content_type == 'image/svg+xml':
@@ -83,6 +118,10 @@ def download_convert_favicon(favicon_url):
         byte_arr = BytesIO()
         logo.save(byte_arr, format='PNG', optimize=True)
         return byte_arr.getvalue()
+    
+    except KeyboardInterrupt:
+        print("\nInterrupted! Exiting...")
+        return exit(0)
 
     except Exception as e:
         print(f"Error processing {favicon_url}: {str(e)}")
@@ -181,26 +220,30 @@ df.drop_duplicates(inplace=True)
 
 with ThreadPoolExecutor(max_workers = num_cores) as executor:
     future_to_domain = {executor.submit(fetch_favicon, row['domain']): row['domain'] for index, row in df.iterrows()}
-    with open("output.txt", "w") as f:
-        for future in as_completed(future_to_domain):
-            domain = future_to_domain[future]
-            try:
-                favicon_url = future.result()
+
+    for future in as_completed(future_to_domain):
+        domain = future_to_domain[future]
+        try:
+            favicon_url = future.result()
+            if favicon_url:
                 favicon_data = download_convert_favicon(favicon_url)
 
                 if favicon_data:
                     store_favicon_in_db(domain, favicon_data)
     
                 else:
-                    f.write(f"Error fetching favicon for {domain}\n")
-            except Exception as e:
-                f.write(f"Error fetching favicon for {domain}: {e}\n")
+                    continue
+            else:
+                continue
+                        
+        except Exception as e:
+            continue
 
 
-# url = 'https://www.enterprise.ae/'
+# url = 'https://www.enterprise.ae'
 # favicon_url = get_favicon(url)
-#print(favicon_url)
 # print(favicon_url)
+
 # svg_data = download_convert_favicon(favicon_url)
 
 # store_favicon_in_db(url, svg_data)
@@ -210,3 +253,4 @@ minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
 
 #Invalid image file: https://cafelasmargaritas.es/wp-content/uploads/2023/12/cropped-ico-32x32.avif
+#https://www.bakertilly.com.kh

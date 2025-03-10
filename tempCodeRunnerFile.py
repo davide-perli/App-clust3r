@@ -1,2 +1,3 @@
-CREATE INDEX IF NOT EXISTS favicons_hash_idx ON favicons (image_hash);
-CREATE UNIQUE INDEX IF NOT EXISTS favicons_domain_idx ON favicons (domain);
+url = 'https://www.xella-colloquium.berlin'
+favicon_url = get_favicon(url)
+print(favicon_url)
