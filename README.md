@@ -27,6 +27,19 @@
      response = requests.get(url, headers=headers, verify=False, timeout=10)
      ```
 
-4. **Improving Performance**:
+## Second Part
+
+4. **Downloading and Converting the Icons/Logos**:
+   - Open the URL where the icon/logo is located, check for the content type, verify and open it, and save it in a byte array for storage in the database and for later comparison.
+   - Use the cairosvg library for SVG format and Pillow for the others.
+   - Save the image as a byte array in PNG format.
+
+5. **Comparing and Storing**:
+   - Connect to the online database I created in PostgreSQL and pass the domain name and the image as a byte array.
+   - Perform a fast byte comparison for exact duplicates (same domain URL and logo).
+   - Store the data in the database.
+   - Implement a comparison function between images using OpenCV format and histogram comparison (solution found online while searching for OpenCV documentation).
+
+6. **Improving Performance**:
    - Since fetching favicons from all sites takes too long, use a ThreadPoolExecutor for parallelism on the task.
    - Utilize 20 virtual cores (with my CPU Intel I7 12700H) to achieve a 20x performance improvement.
