@@ -8,13 +8,13 @@
 
 2. **Fetching Favicons**:
    - Implement a function to get the favicon for each URL.
-   - After many tries and different approaches, I decided to use Google's free API: `https://www.google.com/s2/favicons?sz=64&domain_url=microsoft.com`. This solution was found on Stack Overflow.
+   - After many tries and different approaches, I decided to use Google's free API: `https://www.google.com/s2/favicons?sz=64&domain_url=microsoft.com`. This solution was found on Stack Overflow ([link](https://stackoverflow.com/questions/10456663/any-way-to-grab-a-logo-icon-from-website-url-programmatically)).
    - Previous attempts included:
      - Using the BeautifulSoup library to parse the HTML and search links for keywords like "icon" or "logo". This approach usually gave me around 2966 - 3070 favicons because many sites update the logo or move it without taking the previous link down, so I often got an invalid link or worse, redirected to the main page.
      - Checking the link further for `raise_for_status() = 200` to check if the link was accessible and then checking the content type for an image type. This proved ineffective since if I needed to try other links, it would take time, and also multiple attempts to access some sites resulted in IP blocking with a 403 error (client forbidden) or 404/405 errors even when using the fake_useragent library.
      - Due to the lack of any VPN or proxy server for IP rotation to avoid being blocked, I attempted to use the Selenium library to utilize a headless browser, but it was a lot slower and still failed to get a lot of icons/logos from sites. Using the Tor browser instead would have been even slower.
    - Improvements using Google's free API:
-     - Average time of 16 minutes and 20 seconds, whereas with BeautifulSoup (the second fastest), it took at least 29 minutes in the best cases.
+     - Average time of 16 minutes and 20 seconds, whereas with BeautifulSoup (the second fastest), it took at least 29 minutes in the best cases (for these measurements the comparison function wasn't called, only implemented, and the clustering wasn't implemented).
      - 100% success at getting the icons/logos from the input example, whereas with BeautifulSoup (the second best), only around 87% of the icons/logos were obtained due to invalid file formats for the image or not getting the URL for the reasons mentioned previously (an attempt with retrial got me a little over 90%).
      - Got 3416 icons/logos out of 3416 (originally 4384, but there were duplicates eliminated with the command `df.drop_duplicates(inplace=True)`).
 
