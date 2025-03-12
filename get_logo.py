@@ -1,16 +1,9 @@
-import os, requests, pandas as pd, urllib3, time, psycopg2
+import os, requests, pandas as pd, urllib3, time, psycopg2, cairosvg
 from PIL import Image
 from urllib.parse import urljoin, urlparse
 from fake_useragent import UserAgent # type: ignore
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
-import cv2
-import numpy as np
-import cairosvg
-
 from io import BytesIO
-
-from pillow_avif import AvifImagePlugin
 
 start_time = time.time()
 
@@ -47,7 +40,7 @@ def download_convert_favicon(favicon_url):
                 print(f"Invalid SVG file: {favicon_url}")
                 return None
         else:
-            # Verify image can be opened
+
             try:
                 logo = Image.open(BytesIO(response.content))
                 logo.verify() 
@@ -55,7 +48,6 @@ def download_convert_favicon(favicon_url):
                 print(f"Invalid image file: {favicon_url}")
                 return None
                 
-            # Re-open after verification
             logo = Image.open(BytesIO(response.content))
         
         # Handle transparency and color modes
@@ -72,33 +64,6 @@ def download_convert_favicon(favicon_url):
         print(f"Error processing {favicon_url}: {str(e)}")
         return None
 
-
-def images_compare(img1_bytes, img2_bytes):
-    try:
-        # Convert bytes to OpenCV format
-        nparr1 = np.frombuffer(img1_bytes, np.uint8)
-        img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
-        
-        nparr2 = np.frombuffer(img2_bytes, np.uint8)
-        img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
-
-        # Resize and convert to HSV
-        img1 = cv2.resize(img1, (300, 300))
-        img2 = cv2.resize(img2, (300, 300))
-        hsv1 = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV)
-        hsv2 = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
-
-        # Histogram comparison
-        hist1 = cv2.calcHist([hsv1], [0, 1], None, [50, 60], [0, 180, 0, 256])
-        hist2 = cv2.calcHist([hsv2], [0, 1], None, [50, 60], [0, 180, 0, 256])
-        
-        cv2.normalize(hist1, hist1).flatten()
-        cv2.normalize(hist2, hist2).flatten()
-        
-        return cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL) * 100
-    except Exception as e:
-        print(f"Comparison error: {e}")
-        return 0
 
 def store_favicon_in_db(domain, svg_data):
     try:
