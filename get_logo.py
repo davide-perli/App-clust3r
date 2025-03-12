@@ -73,10 +73,6 @@ def download_convert_favicon(favicon_url):
         return None
 
 
-
-def images_are_equal(img1_bytes, img2_bytes):
-    return img1_bytes == img2_bytes
-
 def images_compare(img1_bytes, img2_bytes):
     try:
         # Convert bytes to OpenCV format
@@ -116,22 +112,8 @@ def store_favicon_in_db(domain, svg_data):
         cursor = conn.cursor()
 
         cursor.execute("SELECT domain, svg_data FROM favicons WHERE svg_data IS NOT NULL")
-        existing = cursor.fetchall()
-        
-        duplicate = False
-        
-        for existing_domain, existing_data in existing:
-            if not existing_data:
-                continue
-                
-            # Fast byte comparison
-            if images_are_equal(svg_data, existing_data):
-                duplicate = True
-                break
 
-        if duplicate:
-            print(f"Skipping {domain}: Exact duplicate of {existing_domain}")
-        elif svg_data:
+        if svg_data:
             cursor.execute(
                 """INSERT INTO favicons (domain, svg_data) 
                    VALUES (%s, %s) 
@@ -184,20 +166,9 @@ with ThreadPoolExecutor(max_workers = num_cores) as executor:
             continue
 
 
-# url = 'https://www.enterprise.ae'
-# favicon_url = get_favicon(url)
-# print(favicon_url)
-
-# svg_data = download_convert_favicon(favicon_url)
-
-# store_favicon_in_db(url, svg_data)
-
 print(f"\nTotal number of failed url favicons: {i}")
 print(f"\nTotal number of failed image downloads: {j}\n")
 
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
-
-#Invalid image file: https://cafelasmargaritas.es/wp-content/uploads/2023/12/cropped-ico-32x32.avif
-#https://www.bakertilly.com.kh
