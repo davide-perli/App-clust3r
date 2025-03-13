@@ -53,15 +53,15 @@ Connect to the database to store/see the URLs and the logos!
 ## Third Part
 
 7. **Fetching and Comparing Icons/Logos**:
-   - Use a cursor to fetch all the URLs and byte-arrays and dump them in a list of tuples.
-   - Then process the similarity between each byte-array (logos/icons of the sites).
-   - Implement a comparison function between images using OpenCV format and histogram comparison (solution found online while searching for OpenCV documentation).
-   - Based on the percentage of similarity, dump them in a dictionary where the keys are 4 different similarity options.
+   - Use a cursor to fetch all the URLs and byte arrays and dump them in a list of tuples.
+   - Then process the similarity between each byte array (logos/icons of the sites).
+   - Implement a comparison function between images using OpenCV format and histogram comparison at first, but then deciding on a feature-based method like the ORB algorithm. Although slower (16 minutes histogram comparison vs 30 minutes ORB), I find it more accurate since it covers transformations like rotation, scaling, and partial occlusion. Therefore, I find it better than pixel-based methods like histogram comparison or SSIM since spatial changes can be a factor when comparing logos/icons. I also improved the matching with a ratio test and applying Lowe's ratio test.
+   - Based on the percentage of similarity, dump them in a dictionary where the keys are 5 different similarity options.
    - For each key, write the URLs grouped by similarity in an output text document by leaving a space between URLs.
-   - Average time: 16 minutes, but this greatly depends since the elements are dumped from the database in a list of tuples and then processed, which means that the whole data is kept in the RAM (I have 32GB) for processing until it is dumped in the output document. Because of this, time and performance may vary a lot.
+   - Average time: 30 minutes, but this greatly depends since the elements are dumped from the database in a list of tuples and then processed, which means that the whole data is kept in the RAM (I have 32GB) for processing until it is dumped in the output document. Because of this, time and performance may vary a lot.
 
 ## Results
-   - Total average time for processing all data in my case: 32 minutes
+   - Total average time for processing all data in my case: 50 minutes
    - Amount of URLs processed: 4384, but 968 of them were exact duplicates
    - Number of failed icons/logos: 0 (of course some sites didn't have a logo, but they are given one by default, the planet in shades of gray).
    - All of them were compared and grouped, but the comparison mode is subjective and not quite optimal since similarity can vary: similarity by color, shape, style, design, etc.

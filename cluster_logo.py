@@ -4,26 +4,45 @@ start_time = time.time()
 
 def images_compare(img1_bytes, img2_bytes):
     try:
-
         nparr1 = np.frombuffer(img1_bytes, np.uint8)
         img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
         
         nparr2 = np.frombuffer(img2_bytes, np.uint8)
         img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
 
-        img1 = cv2.resize(img1, (300, 300))
-        img2 = cv2.resize(img2, (300, 300))
-        hsv1 = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV)
-        hsv2 = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
+        if img1 is None or img2 is None:
+            return 0
 
-        # Histogram comparison
-        hist1 = cv2.calcHist([hsv1], [0, 1], None, [50, 60], [0, 180, 0, 256])
-        hist2 = cv2.calcHist([hsv2], [0, 1], None, [50, 60], [0, 180, 0, 256])
+        img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+        orb = cv2.ORB_create(
+            nfeatures=500,  
+            scaleFactor=1.3,  
+            edgeThreshold=15  
+        )
+
+        kpA, desA = orb.detectAndCompute(img1, None)
+        kpB, desB = orb.detectAndCompute(img2, None)
+
+        if len(kpA) < 10 or len(kpB) < 10:
+            return 0
+
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+        matches = bf.knnMatch(desA, desB, k=2)
         
-        cv2.normalize(hist1, hist1).flatten()
-        cv2.normalize(hist2, hist2).flatten()
-        
-        return cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL) * 100
+        good_matches = []
+        for m,n in matches:
+            if m.distance < 0.7 * n.distance:
+                good_matches.append(m)
+
+        max_matches = min(len(kpA), len(kpB))
+        if max_matches == 0:
+            return 0
+            
+        similarity = (len(good_matches) / max_matches) * 100
+        return min(similarity, 100)  
+
     except Exception as e:
         print(f"Comparison error: {e}")
         return 0
@@ -41,17 +60,19 @@ def cluster_domains():
     cursor.execute("SELECT domain, svg_data FROM favicons WHERE svg_data IS NOT NULL")
     all_domains = cursor.fetchall()
     
-
     cluster = {
         '100': [],
         '80': [],
         '50': [],
-        'other': []
+        'other': [],
+        'no_logo': []
     }
     
     processed = set()
     
     def process_similarity(domain1, data1, domain2, data2, threshold):
+        if not data1 or not data2:
+            return None
         similarity = images_compare(data1, data2)
         if similarity >= threshold:
             return domain2
@@ -61,6 +82,10 @@ def cluster_domains():
     for i, (domain1, data1) in enumerate(all_domains):
         if domain1 in processed:
             continue
+        if not data1:
+            cluster['no_logo'].append(domain1)
+            processed.add(domain1)
+
         current_group = [domain1]
         for j, (domain2, data2) in enumerate(all_domains[i+1:], start=i+1):
             result = process_similarity(domain1, data1, domain2, data2, 95)
@@ -77,6 +102,9 @@ def cluster_domains():
     for i, (domain1, data1) in enumerate(remaining):
         if domain1 in processed:
             continue
+        if not data1:
+            cluster['no_logo'].append(domain1)
+            processed.add(domain1)
         current_group = [domain1]
         for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
             result = process_similarity(domain1, data1, domain2, data2, 80)
@@ -93,6 +121,9 @@ def cluster_domains():
     for i, (domain1, data1) in enumerate(remaining):
         if domain1 in processed:
             continue
+        if not data1:
+            cluster['no_logo'].append(domain1)
+            processed.add(domain1)
         current_group = [domain1]
         for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
             result = process_similarity(domain1, data1, domain2, data2, 50)
@@ -102,8 +133,18 @@ def cluster_domains():
         if len(current_group) > 1:
             cluster['50'].append(current_group)
             processed.add(domain1)
+
+    # No logo
+    remaining = [d for d in remaining if d[0] not in processed]
     
-    cluster['other'] = [d[0] for d in all_domains if d[0] not in processed]
+    for i, (domain1, data1) in enumerate(remaining):
+        if domain1 in processed:
+            continue
+        if not data1:
+            cluster['no_logo'].append(domain1)
+            processed.add(domain1)
+        else:
+            cluster['other'].append(domain1)
     
     cursor.close()
     conn.close()
@@ -114,7 +155,7 @@ clusters = cluster_domains()
 
 with open("output.txt", "w") as f:
     f.write("\nClustering Results:\n\n")
-    f.write("\n---100% Similarity groups(95% - 100%)---\n\n")
+    f.write("\n---100% Similarity groups (95% - 100%)---\n\n")
     for group in clusters['100']:
         f.write(" ".join(group) + "\n")
         
@@ -128,6 +169,10 @@ with open("output.txt", "w") as f:
         
     f.write("\n\n---Less than 50% similarity logos---\n\n")
     for domain in clusters['other']:
+        f.write(domain + "\n")
+
+    f.write("\n\n---Sites with no logos/icons---\n\n")
+    for domain in clusters['no_logo']:
         f.write(domain + "\n")
 
 elapsed_time = time.time() - start_time
