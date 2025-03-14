@@ -2,6 +2,7 @@ import psycopg2, cv2, time, numpy as np
 
 start_time = time.time()
 
+
 def images_compare(img1_bytes, img2_bytes):
     try:
         nparr1 = np.frombuffer(img1_bytes, np.uint8)
@@ -12,6 +13,11 @@ def images_compare(img1_bytes, img2_bytes):
 
         if img1 is None or img2 is None:
             return 0
+        
+        # standard_size = (64, 64)
+        # img1 = cv2.resize(img1, standard_size)
+        # img2 = cv2.resize(img2, standard_size)
+
 
         img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
         img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
@@ -49,15 +55,19 @@ def images_compare(img1_bytes, img2_bytes):
 
 def cluster_domains():
     conn = psycopg2.connect(
-        dbname="svg_storage",
-        user="postgres",
-        password="dlmvm",
-        host="localhost",
-        port="5432"
+        dbname = "svg_storage",
+        user = "postgres",
+        password = "dlmvm",
+        host = "localhost",
+        port = "5432"
     )
     cursor = conn.cursor()
     
-    cursor.execute("SELECT domain, svg_data FROM favicons WHERE svg_data IS NOT NULL")
+    cursor.execute("SELECT domain FROM favicons WHERE is_no_logo = true")
+
+    no_logo_domains = cursor.fetchall()
+
+    cursor.execute("SELECT domain, svg_data FROM favicons WHERE is_no_logo = false")
     all_domains = cursor.fetchall()
     
     cluster = {
@@ -67,6 +77,8 @@ def cluster_domains():
         'other': [],
         'no_logo': []
     }
+
+    cluster['no_logo'].extend([domain[0] for domain in no_logo_domains])
     
     processed = set()
     
@@ -82,10 +94,6 @@ def cluster_domains():
     for i, (domain1, data1) in enumerate(all_domains):
         if domain1 in processed:
             continue
-        if not data1:
-            cluster['no_logo'].append(domain1)
-            processed.add(domain1)
-
         current_group = [domain1]
         for j, (domain2, data2) in enumerate(all_domains[i+1:], start=i+1):
             result = process_similarity(domain1, data1, domain2, data2, 95)
@@ -102,9 +110,6 @@ def cluster_domains():
     for i, (domain1, data1) in enumerate(remaining):
         if domain1 in processed:
             continue
-        if not data1:
-            cluster['no_logo'].append(domain1)
-            processed.add(domain1)
         current_group = [domain1]
         for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
             result = process_similarity(domain1, data1, domain2, data2, 80)
@@ -121,9 +126,6 @@ def cluster_domains():
     for i, (domain1, data1) in enumerate(remaining):
         if domain1 in processed:
             continue
-        if not data1:
-            cluster['no_logo'].append(domain1)
-            processed.add(domain1)
         current_group = [domain1]
         for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
             result = process_similarity(domain1, data1, domain2, data2, 50)
@@ -134,15 +136,12 @@ def cluster_domains():
             cluster['50'].append(current_group)
             processed.add(domain1)
 
-    # No logo
+    # < 50%
     remaining = [d for d in remaining if d[0] not in processed]
     
     for i, (domain1, data1) in enumerate(remaining):
         if domain1 in processed:
             continue
-        if not data1:
-            cluster['no_logo'].append(domain1)
-            processed.add(domain1)
         else:
             cluster['other'].append(domain1)
     
@@ -155,15 +154,15 @@ clusters = cluster_domains()
 
 with open("output.txt", "w") as f:
     f.write("\nClustering Results:\n\n")
-    f.write("\n---100% Similarity groups (95% - 100%)---\n\n")
+    f.write("\n---95% - 100% Similarity groups (95% - 100%)---\n\n")
     for group in clusters['100']:
         f.write(" ".join(group) + "\n")
         
-    f.write("\n\n---Over 80% similarity groups---\n\n")
+    f.write("\n\n---80% - 95% similarity groups---\n\n")
     for group in clusters['80']:
         f.write(" ".join(group) + "\n")
         
-    f.write("\n\n---Over 50% similarity groups---\n\n")
+    f.write("\n\n---50% - 80% similarity groups---\n\n")
     for group in clusters['50']:
         f.write(" ".join(group) + "\n")
         
@@ -178,3 +177,4 @@ with open("output.txt", "w") as f:
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
+#--- 33 minutes and 54 seconds ---
