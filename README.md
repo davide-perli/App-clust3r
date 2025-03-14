@@ -28,6 +28,7 @@ Connect to the database to store/see the URLs and the logos!
      - I wanted to distinguish the sites with no logo/icon from the other ones so they get grouped together in another category. After many tries, I found a solution. Resize the byte arrays to a 64x64 dimension (I know it takes up more storage but it makes a more accurate comparison) and compare them with the byte array of a site with no logo/icon (the default planet-looking logo/icon) using the `images_compare` function from `cluster_logo.py` and if they match more than 98% (byte arrays may differ a little bit between each other) they are considered to have no logo/icon and in the column "is_no_logo" which got added recently is set to true, otherwise it's false by default.
      - Using Google's API a few sites got categorized as having no logo/icon even though they have one when manually checking without the API, but the results are still good and it may be an issue on the site's fault.
      - Here is how it looks when a site doesn't have a logo/icon:
+     
      ![alt text](image.png)
 
 3. **Handling Anti-Scraping**:
