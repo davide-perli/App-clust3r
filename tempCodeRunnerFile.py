@@ -1,4 +1,3 @@
-
-url = "alcirclebiz.com"
-print(f"{get_favicon(url)}")
-print(f"{download_convert_favicon(get_favicon(url))}")
+        standard_size = (64, 64)
+        img1 = cv2.resize(img1, standard_size)
+        img2 = cv2.resize(img2, standard_size)
