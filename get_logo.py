@@ -393,7 +393,7 @@ df.drop_duplicates(inplace=True)
 # with open("dump.txt", "r") as file:
 #     lines = file.readlines()
 
-# # Create a DataFrame from the lines
+# Create a DataFrame from the lines
 # df = pd.DataFrame(lines, columns=["domain"])
 
 i = 0
