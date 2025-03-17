@@ -2,7 +2,6 @@ import psycopg2, cv2, time, numpy as np
 
 start_time = time.time()
 
-
 def images_compare(img1_bytes, img2_bytes):
     try:
         nparr1 = np.frombuffer(img1_bytes, np.uint8)
@@ -177,4 +176,4 @@ with open("output.txt", "w") as f:
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
-#--- 33 minutes and 54 seconds ---
+#--- 39 minutes and 51 seconds ---

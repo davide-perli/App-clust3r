@@ -1,4 +1,4 @@
-import os, requests, pandas as pd, urllib3, time, psycopg2, cairosvg
+import os, requests, pandas as pd, urllib3, time, psycopg2
 from PIL import Image
 from urllib.parse import urljoin, urlparse
 from fake_useragent import UserAgent # type: ignore
@@ -6,6 +6,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from cluster_logo import images_compare
 from bs4 import BeautifulSoup
+
+from wand.image import Image as WandImage
+
 
 
 start_time = time.time()
@@ -200,8 +203,18 @@ def download_convert_favicon(favicon_url):
             logo = logo.resize((64, 64), Image.LANCZOS)
                 
             byte_arr = BytesIO()
-            logo.save(byte_arr, format = 'PNG', optimize = True
-            )
+            logo.save(byte_arr, format = 'PNG', optimize = True)
+
+            # ######################
+            # logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
+            # byte_arr.seek(0)  # Reset the pointer to the beginning
+
+            # logo = Image.open(byte_arr)  # Reopen from the byte array
+            # logo = logo.resize((64, 64), Image.LANCZOS)
+
+            # byte_arr = BytesIO()
+            # logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
+            # #####################
             favicon_data = byte_arr.getvalue()
             similarity = images_compare(favicon_data, no_logo_byte_array)
             if similarity > 99: 
@@ -221,8 +234,17 @@ def download_convert_favicon(favicon_url):
                 logo = logo.resize((64, 64), Image.LANCZOS)
                     
                 byte_arr = BytesIO()
-                logo.save(byte_arr, format = 'PNG', optimize = True
-                )
+                logo.save(byte_arr, format = 'PNG', optimize = True)
+                ######################
+                # logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
+                # byte_arr.seek(0)  # Reset the pointer to the beginning
+
+                # logo = Image.open(byte_arr)  # Reopen from the byte array
+                # logo = logo.resize((64, 64), Image.LANCZOS)
+
+                # byte_arr = BytesIO()
+                # logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
+                # #####################
                 favicon_data = byte_arr.getvalue()
                 similarity = images_compare(favicon_data, no_logo_byte_array)
                 if similarity > 99:
@@ -253,13 +275,43 @@ def download_convert_favicon(favicon_url):
                         response = requests.get(favicon_url, headers = headers, verify = False, timeout = 10)
                       
                         # Handle SVG files
-                        if 'svg' in response.headers.get:
-                            png_data = cairosvg.svg2png(bytestring=response.content)
-                            logo = Image.open(BytesIO(png_data))
+                        if 'svg' in response.headers.get('Content-Type', ''):
                             try:
-                                logo.verify()
-                            except:
-                                print("AI BELIT PULA")
+                                # Convert SVG to PNG using Wand
+                                with WandImage(blob=response.content) as img:
+                                    img.strip()
+                                    img.format = 'png'
+                                    png_data = img.make_blob()
+
+                                logo = Image.open(BytesIO(png_data))
+                                logo.info.pop('icc_profile', None)
+
+                                logo = logo.convert("RGBA")
+
+                                logo = logo.resize((64, 64), Image.LANCZOS)
+
+                                byte_arr = BytesIO()
+                                #logo.save(byte_arr, format = 'PNG', optimize = True, icc_profile = None)
+                                ######################
+                                logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
+                                byte_arr.seek(0)  # Reset the pointer to the beginning
+
+                                logo = Image.open(byte_arr)  # Reopen from the byte array
+                                logo = logo.resize((64, 64), Image.LANCZOS)
+
+                                byte_arr = BytesIO()
+                                logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
+                                #####################
+                                favicon_data = byte_arr.getvalue()
+                                similarity = images_compare(favicon_data, no_logo_byte_array)
+
+                                is_no_logo = similarity > 99
+                                #print(f"AM IESIT!    {favicon_url}")
+                                return favicon_data, is_no_logo
+
+                            except Exception as e:
+                                print(f"An error occurred: {e}")
+
                         else:
                             try:
                                 logo = Image.open(BytesIO(response.content))
@@ -272,7 +324,17 @@ def download_convert_favicon(favicon_url):
                         logo = logo.resize((64, 64), Image.LANCZOS)
                             
                         byte_arr = BytesIO()
-                        logo.save(byte_arr, format = 'PNG', optimize = True)
+                        #logo.save(byte_arr, format = 'PNG', optimize = True)
+                        ######################
+                        logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
+                        byte_arr.seek(0)  # Reset the pointer to the beginning
+
+                        logo = Image.open(byte_arr)  # Reopen from the byte array
+                        logo = logo.resize((64, 64), Image.LANCZOS)
+
+                        byte_arr = BytesIO()
+                        logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
+                        #####################
                         favicon_data = byte_arr.getvalue()
                         similarity = images_compare(favicon_data, no_logo_byte_array) 
                         is_no_logo = similarity > 99
@@ -287,6 +349,7 @@ def download_convert_favicon(favicon_url):
 
         return favicon_data, is_no_logo    
     except Exception as e:
+        #print(f"ERROR: {e}")
         is_no_logo = True
         return favicon_data, is_no_logo
 
@@ -362,8 +425,8 @@ with ThreadPoolExecutor(max_workers = num_cores) as executor:
 # chicco.pl
 #
 # url = "bbraun.ae"
-# url = "bbraun.ae"
-# print(f"{get_favicon(url)}")
+# url = "bbraun.pe"
+# #print(f"{get_favicon(url)}")
 # print(f"{download_convert_favicon(get_favicon(url))}")
 
 
@@ -374,4 +437,4 @@ print(f"\nTotal number of failed image downloads: {j}\n")
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
-#--- 14 minutes and 9 seconds ---
+#--- 24 minutes and 21 seconds ---
