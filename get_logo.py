@@ -30,11 +30,7 @@ class NoLogoComparer:
         self.no_img = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
         self.no_img_gray = cv2.cvtColor(self.no_img, cv2.COLOR_BGR2GRAY)
         
-        self.orb = cv2.ORB_create(
-            nfeatures=200,
-            scaleFactor=1.3,
-            edgeThreshold=15
-        )
+        self.orb = cv2.ORB_create(nfeatures = 200, scaleFactor = 1.3, edgeThreshold = 15)
         self.kpB, self.desB = self.orb.detectAndCompute(self.no_img_gray, None)
         self.bf = cv2.BFMatcher(cv2.NORM_HAMMING)
     
@@ -67,7 +63,7 @@ class NoLogoComparer:
             print(f"Comparison error: {e}")
             return 0
 
-no_logo_comparer = NoLogoComparer() # Instantiate the singleton
+no_logo_comparer = NoLogoComparer()
 
 def check_no_logo(img1_bytes):
     return no_logo_comparer.check_similarity(img1_bytes)
@@ -157,7 +153,7 @@ def try_multiple_favicon_methods(url, size=64):
 
 
 
-def get_favicon_no_secure_protocol_www(url, size=64):
+def get_favicon_no_secure_protocol_www(url, size = 64):
         
     parsed_url = urlparse(url)
     query = parsed_url.query
@@ -173,7 +169,7 @@ def get_favicon_no_secure_protocol_www(url, size=64):
     return f"https://www.google.com/s2/favicons?domain={domain}&sz={max(16, min(256, size))}"
 
 
-def get_favicon_no_secure_protocol(url, size=64):
+def get_favicon_no_secure_protocol(url, size = 64):
   
     parsed_url = urlparse(url)
     query = parsed_url.query
@@ -189,7 +185,7 @@ def get_favicon_no_secure_protocol(url, size=64):
     return f"https://www.google.com/s2/favicons?domain={domain}&sz={max(16, min(256, size))}"
     
 
-def get_favicon_www(url, size=64):
+def get_favicon_www(url, size = 64):
       
     parsed_url = urlparse(url)
     query = parsed_url.query
@@ -217,8 +213,7 @@ def get_favicon(url, size = 64):
 
 def download_convert_favicon(favicon_url):
     try:
-        headers = {'User-Agent': UserAgent().random}
-        response = requests.get(favicon_url, headers = headers, verify = False, timeout = 10)
+        response = requests.get(favicon_url, headers = {'User-Agent': UserAgent().random}, verify = False, timeout = 10)
 
         try:
             logo = Image.open(BytesIO(response.content))
@@ -371,7 +366,6 @@ df.drop_duplicates(inplace = True)
 # # Create a DataFrame from the lines
 # df = pd.DataFrame(lines, columns=["domain"])
 
-
 i = 0
 j = 0
 
@@ -404,8 +398,6 @@ with ThreadPoolExecutor(max_workers = num_cores) as executor:
 # url = "bbraun.pe"
 # #print(f"{get_favicon(url)}")
 # print(f"{download_convert_favicon(get_favicon(url))}")
-
-
 
 print(f"\nTotal number of failed url favicons: {i}")
 print(f"\nTotal number of failed image downloads: {j}\n")
