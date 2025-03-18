@@ -7,11 +7,7 @@ num_cores = os.cpu_count()
 
 print(f"Number of virtual cores: {num_cores}")
 
-orb = cv2.ORB_create(
-            nfeatures=500,  
-            scaleFactor=1.3,  
-            edgeThreshold=15  
-        )
+orb = cv2.ORB_create(nfeatures = 500, scaleFactor = 1.3, edgeThreshold = 15)
 
 def images_compare(img1_bytes, img2_bytes):
     try:
@@ -96,7 +92,6 @@ def cluster_domains():
         return None
     
     def cluster_domains_by_threshold(threshold, cluster_key):
-        # Use only domains that haven't been processed
         remaining = [d for d in all_domains if d[0] not in processed]
         for i, (domain1, data1) in enumerate(remaining):
             if domain1 in processed:
@@ -157,4 +152,4 @@ with open("output.txt", "w") as f:
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
-#--- 39 minutes and 51 seconds ---
+# --- 9 minutes and 1 seconds ---

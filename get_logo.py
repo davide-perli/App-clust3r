@@ -1,4 +1,4 @@
-import os, requests, pandas as pd, urllib3, time, psycopg2, cv2, numpy as np
+import os, requests, pandas as pd, urllib3, time, psycopg2, cv2, numpy as np, mmap
 from PIL import Image
 from urllib.parse import urljoin, urlparse
 from fake_useragent import UserAgent # type: ignore
@@ -13,46 +13,64 @@ start_time = time.time()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-with open("no_logo_byte_array_file.txt", "rb") as file:
-    no_logo_byte_array = file.read()
+class NoLogoComparer:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(NoLogoComparer, cls).__new__(cls)
+            cls._instance._initialize()
+        return cls._instance
+    
+    def _initialize(self):
+        with open("no_logo_byte_array_file.txt", "rb") as file:
+            no_logo_byte_array = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
+        
+        nparr2 = np.frombuffer(no_logo_byte_array, np.uint8)
+        self.no_img = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
+        self.no_img_gray = cv2.cvtColor(self.no_img, cv2.COLOR_BGR2GRAY)
+        
+        self.orb = cv2.ORB_create(
+            nfeatures=200,
+            scaleFactor=1.3,
+            edgeThreshold=15
+        )
+        self.kpB, self.desB = self.orb.detectAndCompute(self.no_img_gray, None)
+        self.bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+    
+    def check_similarity(self, img1_bytes):
+        try:
+            nparr1 = np.frombuffer(img1_bytes, np.uint8)
+            img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
 
-nparr2 = np.frombuffer(no_logo_byte_array, np.uint8)
-no_img = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
-no_img_gray = cv2.cvtColor(no_img, cv2.COLOR_BGR2GRAY)
-orb = cv2.ORB_create(nfeatures = 200, scaleFactor = 1.3, edgeThreshold = 15)
-kpB, desB = orb.detectAndCompute(no_img_gray, None)
-bf = cv2.BFMatcher(cv2.NORM_HAMMING)
+            if img1 is None:
+                return 0
+
+            img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+            kpA, desA = self.orb.detectAndCompute(img1_gray, None)
+
+            if len(kpA) < 10:
+                return 0
+
+            matches = self.bf.knnMatch(desA, self.desB, k=2)
+
+            good_matches = [m for m, n in matches if m.distance < 0.7 * n.distance]
+
+            max_matches = min(len(kpA), len(self.kpB))
+            if max_matches == 0:
+                return 0
+
+            similarity = (len(good_matches) / max_matches) * 100
+            return min(similarity, 100)
+
+        except Exception as e:
+            print(f"Comparison error: {e}")
+            return 0
+
+no_logo_comparer = NoLogoComparer() # Instantiate the singleton
 
 def check_no_logo(img1_bytes):
-    try:
-        nparr1 = np.frombuffer(img1_bytes, np.uint8)
-        img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
-
-        if img1 is None:
-            return 0
-
-        img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-
-
-        kpA, desA = orb.detectAndCompute(img1_gray, None)
-
-        if len(kpA) < 10:
-            return 0
-
-        matches = bf.knnMatch(desA, desB, k=2)
-
-        good_matches = [m for m, n in matches if m.distance < 0.7 * n.distance]
-
-        max_matches = min(len(kpA), len(kpB))
-        if max_matches == 0:
-            return 0
-
-        similarity = (len(good_matches) / max_matches) * 100
-        return min(similarity, 100)
-
-    except Exception as e:
-        print(f"Comparison error: {e}")
-        return 0
+    return no_logo_comparer.check_similarity(img1_bytes)
 
 def get_favicon_enhanced(url, size=64):
     try:     
@@ -213,175 +231,98 @@ def download_convert_favicon(favicon_url):
         logo = logo.resize((64, 64), Image.LANCZOS)
             
         byte_arr = BytesIO()
-        logo.save(byte_arr, format = 'PNG', optimize = True
-        )
+        logo.save(byte_arr, format = 'PNG', optimize = True)
         favicon_data = byte_arr.getvalue()
         backup_favicon_data = favicon_data
     
         similarity = check_no_logo(favicon_data)
         if similarity > 99:
             url = favicon_url
-            favicon_url = get_favicon_no_secure_protocol(favicon_url)
-            #print(f"First print {favicon_url}")
-            headers = {'User-Agent': UserAgent().random}
-            response = requests.get(favicon_url, headers = headers, verify = False, timeout = 10)
+            methods = [get_favicon_www, get_favicon_no_secure_protocol, get_favicon_no_secure_protocol_www]
+            for attempt in methods:
+                favicon_url = attempt(url)
+                response = requests.get(favicon_url, headers = {'User-Agent': UserAgent().random}, verify = False, timeout = 10)
 
-            try:
                 logo = Image.open(BytesIO(response.content))
                 logo.verify() 
-            except:
-                print(f"Invalid image file: {favicon_url}")
-                return None, None
                 
-            logo = Image.open(BytesIO(response.content))
-            logo = logo.resize((64, 64), Image.LANCZOS)
+                logo = Image.open(BytesIO(response.content))
+                logo = logo.resize((64, 64), Image.LANCZOS)
                 
-            byte_arr = BytesIO()
-            logo.save(byte_arr, format = 'PNG', optimize = True)
+                byte_arr = BytesIO()
+                logo.save(byte_arr, format = 'PNG', optimize = True)
 
-            # ######################
-            # logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
-            # byte_arr.seek(0)  # Reset the pointer to the beginning
 
-            # logo = Image.open(byte_arr)  # Reopen from the byte array
-            # logo = logo.resize((64, 64), Image.LANCZOS)
+                favicon_data = byte_arr.getvalue()
+                similarity = check_no_logo(favicon_data)
+                if similarity < 99: 
+                    return favicon_data, False
+            else:
+                favicon_url = get_favicon_enhanced(url)
+                response = requests.get(favicon_url, headers = {'User-Agent': UserAgent().random}, verify = False, timeout = 10)
+                
+                # Handle SVG files
+                if 'svg' in response.headers.get('Content-Type', ''):
+                    try:
+                        # Convert SVG to PNG using Wand
+                        with WandImage(blob = response.content) as img:
+                            img.strip()
+                            img.format = 'png'
+                            png_data = img.make_blob()
 
-            # byte_arr = BytesIO()
-            # logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
-            # #####################
-            favicon_data = byte_arr.getvalue()
-            similarity = check_no_logo(favicon_data)
-            if similarity > 99: 
-                favicon_url = get_favicon_no_secure_protocol_www(url)
-                #print(f"Second print {favicon_url}")
-                headers = {'User-Agent': UserAgent().random}
-                response = requests.get(favicon_url, headers = headers, verify = False, timeout = 10)
+                        logo = Image.open(BytesIO(png_data))
+                        logo.info.pop('icc_profile', None)
 
-                try:
-                    logo = Image.open(BytesIO(response.content))
-                    logo.verify() 
-                except:
-                    print(f"Invalid image file: {favicon_url}")
-                    return None, None
+                        logo = logo.convert("RGBA")
+
+                        logo = logo.resize((64, 64), Image.LANCZOS)
+
+                        byte_arr = BytesIO()
+                        logo.save(byte_arr, format = 'PNG', optimize = True, icc_profile = None)
+                        byte_arr.seek(0) 
+
+                        logo = Image.open(byte_arr) 
+                        logo = logo.resize((64, 64), Image.LANCZOS)
+
+                        byte_arr = BytesIO()
+                        logo.save(byte_arr, format = 'PNG', optimize = True)
+                        favicon_data = byte_arr.getvalue()
+                        similarity = check_no_logo(favicon_data)
+
+                        is_no_logo = similarity > 99
+                        return favicon_data, is_no_logo
+
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+
+                else:
+                    try:
+                        logo = Image.open(BytesIO(response.content))
+                        logo.verify()
+                    except:
+                        is_no_logo = True
+                        return backup_favicon_data, is_no_logo
                     
                 logo = Image.open(BytesIO(response.content))
                 logo = logo.resize((64, 64), Image.LANCZOS)
                     
                 byte_arr = BytesIO()
+                logo.save(byte_arr, format = 'PNG', optimize = True, icc_profile = None)
+                byte_arr.seek(0) 
+
+                logo = Image.open(byte_arr) 
+                logo = logo.resize((64, 64), Image.LANCZOS)
+
+                byte_arr = BytesIO()
                 logo.save(byte_arr, format = 'PNG', optimize = True)
-                ######################
-                # logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
-                # byte_arr.seek(0)  # Reset the pointer to the beginning
 
-                # logo = Image.open(byte_arr)  # Reopen from the byte array
-                # logo = logo.resize((64, 64), Image.LANCZOS)
-
-                # byte_arr = BytesIO()
-                # logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
-                # #####################
                 favicon_data = byte_arr.getvalue()
-                similarity = check_no_logo(favicon_data)
-                if similarity > 99:
-                    favicon_url = get_favicon_www(url)
-                    #print(f"Third print {favicon_url}")
-                    headers = {'User-Agent': UserAgent().random}
-                    response = requests.get(favicon_url, headers = headers, verify = False, timeout = 10)
-
-                    try:
-                        logo = Image.open(BytesIO(response.content))
-                        logo.verify() 
-                    except:
-                        print(f"Invalid image file: {favicon_url}")
-                        return None, None
-                        
-                    logo = Image.open(BytesIO(response.content))
-                    logo = logo.resize((64, 64), Image.LANCZOS)
-                        
-                    byte_arr = BytesIO()
-                    logo.save(byte_arr, format = 'PNG', optimize = True
-                    )
-                    favicon_data = byte_arr.getvalue()
-                    similarity = check_no_logo(favicon_data) 
-                    if similarity > 99:
-                        favicon_url = get_favicon_enhanced(url)
-                        #print(f"Fourth print {favicon_url}")
-                        headers = {'User-Agent': UserAgent().random}
-                        response = requests.get(favicon_url, headers = headers, verify = False, timeout = 10)
-                      
-                        # Handle SVG files
-                        if 'svg' in response.headers.get('Content-Type', ''):
-                            try:
-                                # Convert SVG to PNG using Wand
-                                with WandImage(blob=response.content) as img:
-                                    img.strip()
-                                    img.format = 'png'
-                                    png_data = img.make_blob()
-
-                                logo = Image.open(BytesIO(png_data))
-                                logo.info.pop('icc_profile', None)
-
-                                logo = logo.convert("RGBA")
-
-                                logo = logo.resize((64, 64), Image.LANCZOS)
-
-                                byte_arr = BytesIO()
-                                #logo.save(byte_arr, format = 'PNG', optimize = True, icc_profile = None)
-                                ######################
-                                logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
-                                byte_arr.seek(0)  # Reset the pointer to the beginning
-
-                                logo = Image.open(byte_arr)  # Reopen from the byte array
-                                logo = logo.resize((64, 64), Image.LANCZOS)
-
-                                byte_arr = BytesIO()
-                                logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
-                                #####################
-                                favicon_data = byte_arr.getvalue()
-                                similarity = check_no_logo(favicon_data)
-
-                                is_no_logo = similarity > 99
-                                #print(f"AM IESIT!    {favicon_url}")
-                                return favicon_data, is_no_logo
-
-                            except Exception as e:
-                                print(f"An error occurred: {e}")
-
-                        else:
-                            try:
-                                logo = Image.open(BytesIO(response.content))
-                                logo.verify()
-                            except:
-                                is_no_logo = True
-                                return backup_favicon_data, is_no_logo
-                            
-                        logo = Image.open(BytesIO(response.content))
-                        logo = logo.resize((64, 64), Image.LANCZOS)
-                            
-                        byte_arr = BytesIO()
-                        #logo.save(byte_arr, format = 'PNG', optimize = True)
-                        ######################
-                        logo.save(byte_arr, format='PNG', optimize=True, icc_profile=None)
-                        byte_arr.seek(0)  # Reset the pointer to the beginning
-
-                        logo = Image.open(byte_arr)  # Reopen from the byte array
-                        logo = logo.resize((64, 64), Image.LANCZOS)
-
-                        byte_arr = BytesIO()
-                        logo.save(byte_arr, format='PNG', optimize=True) # Save the resized image
-                        #####################
-                        favicon_data = byte_arr.getvalue()
-                        similarity = check_no_logo(favicon_data) 
-                        is_no_logo = similarity > 99
-                    else:
-                        is_no_logo = False
-                else:
-                    is_no_logo = False
-            else:
-                is_no_logo = False
-        else:
-            is_no_logo = False
-
-        return favicon_data, is_no_logo    
+                similarity = check_no_logo(favicon_data) 
+                is_no_logo = similarity > 99
+                return favicon_data, is_no_logo
+            
+        return favicon_data, False
+    
     except Exception as e:
         #print(f"ERROR: {e}")
         is_no_logo = True
@@ -421,8 +362,8 @@ num_cores = os.cpu_count()
 
 print(f"Number of virtual cores: {num_cores}")
 
-df = pd.read_parquet("logos.snappy.parquet", engine="fastparquet")
-df.drop_duplicates(inplace=True)
+df = pd.read_parquet("logos.snappy.parquet", engine = "fastparquet")
+df.drop_duplicates(inplace = True)
 
 # with open("dump.txt", "r") as file:
 #     lines = file.readlines()
@@ -472,4 +413,4 @@ print(f"\nTotal number of failed image downloads: {j}\n")
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
-#--- 24 minutes and 21 seconds ---
+#--- 22 minutes and 52 seconds ---
