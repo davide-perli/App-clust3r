@@ -2,6 +2,12 @@ import psycopg2, cv2, time, numpy as np
 
 start_time = time.time()
 
+orb = cv2.ORB_create(
+            nfeatures=500,  
+            scaleFactor=1.3,  
+            edgeThreshold=15  
+        )
+
 def images_compare(img1_bytes, img2_bytes):
     try:
         nparr1 = np.frombuffer(img1_bytes, np.uint8)
@@ -21,11 +27,6 @@ def images_compare(img1_bytes, img2_bytes):
         img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
         img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
-        orb = cv2.ORB_create(
-            nfeatures=500,  
-            scaleFactor=1.3,  
-            edgeThreshold=15  
-        )
 
         kpA, desA = orb.detectAndCompute(img1, None)
         kpB, desB = orb.detectAndCompute(img2, None)
