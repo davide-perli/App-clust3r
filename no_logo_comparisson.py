@@ -6,15 +6,8 @@ with open("no_logo_byte_array_file.txt", "rb") as file:
 nparr2 = np.frombuffer(no_logo_byte_array, np.uint8)
 no_img = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
 no_img_gray = cv2.cvtColor(no_img, cv2.COLOR_BGR2GRAY)
-
-orb = cv2.ORB_create(
-    nfeatures=200,
-    scaleFactor=1.3,
-    edgeThreshold=15
-)
-
+orb = cv2.ORB_create(nfeatures = 200, scaleFactor = 1.3, edgeThreshold = 15)
 kpB, desB = orb.detectAndCompute(no_img_gray, None)
-
 bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
 def check_no_logo(img1_bytes):
@@ -26,6 +19,8 @@ def check_no_logo(img1_bytes):
             return 0
 
         img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+
+
         kpA, desA = orb.detectAndCompute(img1_gray, None)
 
         if len(kpA) < 10:

@@ -1,7 +1,11 @@
-import psycopg2, cv2, time, numpy as np
-
+import psycopg2, cv2, time, numpy as np, os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 start_time = time.time()
+
+num_cores = os.cpu_count()
+
+print(f"Number of virtual cores: {num_cores}")
 
 orb = cv2.ORB_create(
             nfeatures=500,  
@@ -92,16 +96,24 @@ def cluster_domains():
         return None
     
     def cluster_domains_by_threshold(threshold, cluster_key):
+        # Use only domains that haven't been processed
         remaining = [d for d in all_domains if d[0] not in processed]
         for i, (domain1, data1) in enumerate(remaining):
             if domain1 in processed:
                 continue
             current_group = [domain1]
-            for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
-                result = process_similarity(domain1, data1, domain2, data2, threshold)
-                if result:
-                    current_group.append(result)
-                    processed.add(result)
+            with ThreadPoolExecutor(max_workers = num_cores) as executor:
+                futures = {}
+                for domain2, data2 in remaining[i+1:]:
+                    if domain2 in processed:
+                        continue
+                    future = executor.submit(process_similarity, domain1, data1, domain2, data2, threshold)
+                    futures[future] = domain2
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        current_group.append(result)
+                        processed.add(result)
             if len(current_group) > 1:
                 cluster[cluster_key].append(current_group)
                 processed.add(domain1)
@@ -140,7 +152,7 @@ with open("output.txt", "w") as f:
 
     f.write("\n\n---Sites with no logos/icons---\n\n")
     for domain in clusters['no_logo']:
-        f.write(domain + "\n")
+        f.write(domain + "\n") 
 
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
