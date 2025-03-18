@@ -1,5 +1,6 @@
 import psycopg2, cv2, time, numpy as np
 
+
 start_time = time.time()
 
 orb = cv2.ORB_create(
@@ -90,60 +91,27 @@ def cluster_domains():
             return domain2
         return None
     
-    # > 95%
-    for i, (domain1, data1) in enumerate(all_domains):
-        if domain1 in processed:
-            continue
-        current_group = [domain1]
-        for j, (domain2, data2) in enumerate(all_domains[i+1:], start=i+1):
-            result = process_similarity(domain1, data1, domain2, data2, 95)
-            if result:
-                current_group.append(result)
-                processed.add(result)
-        if len(current_group) > 1:
-            cluster['100'].append(current_group)
-            processed.add(domain1)
-    
-    # > 80%
-    remaining = [d for d in all_domains if d[0] not in processed]
-    
-    for i, (domain1, data1) in enumerate(remaining):
-        if domain1 in processed:
-            continue
-        current_group = [domain1]
-        for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
-            result = process_similarity(domain1, data1, domain2, data2, 80)
-            if result:
-                current_group.append(result)
-                processed.add(result)
-        if len(current_group) > 1:
-            cluster['80'].append(current_group)
-            processed.add(domain1)
-    
-    # > 50%
-    remaining = [d for d in remaining if d[0] not in processed]
-    
-    for i, (domain1, data1) in enumerate(remaining):
-        if domain1 in processed:
-            continue
-        current_group = [domain1]
-        for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
-            result = process_similarity(domain1, data1, domain2, data2, 50)
-            if result:
-                current_group.append(result)
-                processed.add(result)
-        if len(current_group) > 1:
-            cluster['50'].append(current_group)
-            processed.add(domain1)
+    def cluster_domains_by_threshold(threshold, cluster_key):
+        remaining = [d for d in all_domains if d[0] not in processed]
+        for i, (domain1, data1) in enumerate(remaining):
+            if domain1 in processed:
+                continue
+            current_group = [domain1]
+            for j, (domain2, data2) in enumerate(remaining[i+1:], start=i+1):
+                result = process_similarity(domain1, data1, domain2, data2, threshold)
+                if result:
+                    current_group.append(result)
+                    processed.add(result)
+            if len(current_group) > 1:
+                cluster[cluster_key].append(current_group)
+                processed.add(domain1)
 
-    # < 50%
-    remaining = [d for d in remaining if d[0] not in processed]
-    
-    for i, (domain1, data1) in enumerate(remaining):
-        if domain1 in processed:
-            continue
-        else:
-            cluster['other'].append(domain1)
+    cluster_domains_by_threshold(95, '100')
+    cluster_domains_by_threshold(80, '80')
+    cluster_domains_by_threshold(50, '50')
+
+    remaining = [d for d in all_domains if d[0] not in processed]
+    cluster['other'].extend([domain[0] for domain in remaining])
     
     cursor.close()
     conn.close()
