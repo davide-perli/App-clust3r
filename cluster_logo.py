@@ -8,6 +8,7 @@ num_cores = os.cpu_count()
 print(f"Number of virtual cores: {num_cores}")
 
 orb = cv2.ORB_create(nfeatures = 500, scaleFactor = 1.3, edgeThreshold = 15)
+bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
 def images_compare(img1_bytes, img2_bytes):
     try:
@@ -35,7 +36,6 @@ def images_compare(img1_bytes, img2_bytes):
         if len(kpA) < 10 or len(kpB) < 10:
             return 0
 
-        bf = cv2.BFMatcher(cv2.NORM_HAMMING)
         matches = bf.knnMatch(desA, desB, k=2)
         
         good_matches = []

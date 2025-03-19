@@ -102,7 +102,7 @@ def try_multiple_favicon_methods(url, size=64):
     ]
 
     for variant in url_variants:
-        response = requests.get(variant, headers={'User-Agent': UserAgent().random}, verify=False, timeout=10)
+        response = requests.get(variant, headers = {'User-Agent': UserAgent().random}, verify = False, timeout = 10)
         if response.status_code == 200:
             break
     else:
@@ -259,7 +259,6 @@ def download_convert_favicon(favicon_url):
                 # Handle SVG files
                 if 'svg' in response.headers.get('Content-Type', ''):
                     try:
-                        # Convert SVG to PNG using Wand
                         with WandImage(blob = response.content) as img:
                             img.strip()
                             img.format = 'png'
@@ -392,8 +391,7 @@ with ThreadPoolExecutor(max_workers = num_cores) as executor:
         except Exception as e:
             print(f"GETTING DOMAIN ERROR : {e} FOR {domain}")
             continue
-# chicco.pl
-#
+
 # url = "bbraun.ae"
 # url = "bbraun.pe"
 # #print(f"{get_favicon(url)}")
