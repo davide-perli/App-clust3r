@@ -24,7 +24,7 @@ class NoLogoComparer:
     
     def _initialize(self):
         with open("no_logo_byte_array_file.txt", "rb") as file:
-            no_logo_byte_array = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
+            no_logo_byte_array = mmap.mmap(file.fileno(), 0, access = mmap.ACCESS_READ)
         
         nparr2 = np.frombuffer(no_logo_byte_array, np.uint8)
         self.no_img = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
@@ -317,8 +317,7 @@ def download_convert_favicon(favicon_url):
             
         return favicon_data, False
     
-    except Exception as e:
-        #print(f"ERROR: {e}")
+    except:
         is_no_logo = True
         return favicon_data, is_no_logo
 
@@ -359,6 +358,7 @@ print(f"Number of virtual cores: {num_cores}")
 df = pd.read_parquet("logos.snappy.parquet", engine = "fastparquet")
 df.drop_duplicates(inplace = True)
 
+# Here where 111 problematic url's, only for 36 I wasn't able to get the logo/icon
 # with open("dump.txt", "r") as file:
 #     lines = file.readlines()
 
@@ -391,11 +391,6 @@ with ThreadPoolExecutor(max_workers = num_cores) as executor:
         except Exception as e:
             print(f"GETTING DOMAIN ERROR : {e} FOR {domain}")
             continue
-
-# url = "bbraun.ae"
-# url = "bbraun.pe"
-# #print(f"{get_favicon(url)}")
-# print(f"{download_convert_favicon(get_favicon(url))}")
 
 print(f"\nTotal number of failed url favicons: {i}")
 print(f"\nTotal number of failed image downloads: {j}\n")

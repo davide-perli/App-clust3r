@@ -1,8 +1,4 @@
-import psycopg2
-import cv2
-import time
-import numpy as np
-import os
+import psycopg2, cv2, time, os, numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 start_time = time.time()
@@ -158,3 +154,4 @@ with open("output.txt", "w") as f:
 elapsed_time = time.time() - start_time
 minutes, seconds = divmod(elapsed_time, 60)
 print(f"--- {int(minutes)} minutes and {int(seconds)} seconds ---")
+# --- 9 minutes and 8 seconds ---
