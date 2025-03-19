@@ -1,0 +1,10 @@
+requests - For making HTTP requests
+pandas - For handling data frames
+urllib3 - For handling HTTP requests
+psycopg2-binary - For connecting to PostgreSQL databases
+opencv-python-headless - For image processing with OpenCV (without graphical user interface)
+numpy - For numerical operations
+pillow - For image processing with PIL
+fake-useragent -  For generating random user agents in order to get around anti-scraping websites
+beautifulsoup - For parsing HTML
+wand - For handling SVG to PNG conversion
