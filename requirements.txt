@@ -8,3 +8,4 @@ pillow - For image processing with PIL
 fake-useragent -  For generating random user agents in order to get around anti-scraping websites
 beautifulsoup - For parsing HTML
 wand - For handling SVG to PNG conversion
+fastparquet - For reading from a parquet file

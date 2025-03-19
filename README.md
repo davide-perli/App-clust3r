@@ -6,7 +6,7 @@
    - Python 3.12.3 (other versions might work, but I haven't tested them).
    - Import the necessary modules listed in the `requirements.txt` file (link here: [requirements.txt](https://github.com/davide-perli/App-clust3r/blob/main/requirements.txt)) or install them using these commands:
      ```
-     pip install requests pandas urllib3 psycopg2-binary opencv-python-headless numpy pillow fake-useragent beautifulsoup4 wand
+     pip install requests pandas urllib3 psycopg2-binary opencv-python-headless numpy pillow fake-useragent beautifulsoup4 wand fastparquet
      ```
 
 ## Compilation
