@@ -3,7 +3,7 @@
 ## Requirements
 
 1. **Create a virtual enviroment**
-   -> Import the  needed modules listed in the requirements.txt (link here: `link`)
+   -> Import the  needed modules listed in the requirements.txt (link here: [requirements.txt]())
 
 ## Compilation
 
