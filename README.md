@@ -16,7 +16,7 @@ This project aims to match and group websites by the similarity of their logos
 
    - **OpenCV** -> for image processing and comparison using ORB feature detection algorithm.
 
-   - ***fake_useragent** -> to bypass anti-scraping websites.
+   - **fake_useragent** -> to bypass anti-scraping websites.
 
    - **wand.image** -> to convert a `.svg` image to a `.png` one.
 
