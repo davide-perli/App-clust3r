@@ -8,15 +8,21 @@ This project aims to match and group websites by the similarity of their logos
 
 1. **Main and unique Technologies**
 
-   -Google's free API for getting websites' logos/icons
-   -PostgreSQL database
+   -Google's free API for getting websites' logos/icons.
+
+   -PostgreSQL database.
 
 2. **Interesting libraries/modules used**
-   -OpenCV -> for image processing and comparison using ORB feature detection algorithm
-   -fake_useragent -> to bypass anti-scraping websites
-   -wand.image -> to convert a `.svg` image to a `.png` one
-   -mmap -> memory mapping to access more efficiently the large no_logo image which is stored as bytes
-   -ThreadPoolExecutor -> to improve execution time by adding parallelism to the code
+
+   -OpenCV -> for image processing and comparison using ORB feature detection algorithm.
+
+   -fake_useragent -> to bypass anti-scraping websites.
+
+   -wand.image -> to convert a `.svg` image to a `.png` one.
+
+   -mmap -> memory mapping to access more efficiently the large no_logo image which is stored as bytes.
+
+   -ThreadPoolExecutor -> to improve execution time by adding parallelism to the code.
 
 # Project Overview
 
