@@ -1,3 +1,23 @@
+# Introduction
+
+## Summary
+
+This project aims to match and group websites by the similarity of their logos
+
+## Technologies used + interesting libraries/modules used
+
+1. **Main and unique Technologies**
+
+   -Google's free API for getting websites' logos/icons
+   -PostgreSQL database
+
+2. **Interesting libraries/modules used**
+   -OpenCV -> for image processing and comparison using ORB feature detection algorithm
+   -fake_useragent -> to bypass anti-scraping websites
+   -wand.image -> to convert a `.svg` image to a `.png` one
+   -mmap -> memory mapping to access more efficiently the large no_logo image which is stored as bytes
+   -ThreadPoolExecutor -> to improve execution time by adding parallelism to the code
+
 # Project Overview
 
 ## Requirements
@@ -16,6 +36,7 @@ Then run the `cluster_logo.py` program.
 The list of URLs is stored in the `logos.snappy.parquet` file.
 Results are saved in the `output.txt` file.
 Connect to the database to store and view the URLs and the logos!
+The results can be seen in the [output.txt file](https://github.com/davide-perli/App-clust3r/blob/main/output.txt)
 
 ## First Part
 
@@ -90,7 +111,7 @@ Connect to the database to store and view the URLs and the logos!
    - All these improvements are meant to reduce execution time due to the fact that I have O(n^2) complexity since I compare each image with all the others and then remove it from the list and so on which is fine for 3416 images/logos but not that great for 20,000 for example. I believe working with image hashes might be better than with the image bytes scaled to 64x64, but it still doesn't remove the complexity.
 
 ## Results
-
+   - The results can be seen in the [output.txt file](https://github.com/davide-perli/App-clust3r/blob/main/output.txt)
    - Total average time for processing all data in my case: 32 minutes
    - Amount of URLs processed: 4384, but 968 of them were exact duplicates so they were dropped immediately after opening the parquet
    - Number of failed icons/logos: 32 (of course some sites I couldn't get a logo/icon, but they are given one by default, the planet in shades of gray). This is due to the fact that I either couldn't process them or the fact that they changed the link for the logo leaving the old one behind which contained a blank white image, error 404 redirect pages, or redirect to the main page.
