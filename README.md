@@ -120,5 +120,5 @@ The results can be seen in the [output.txt file](https://github.com/davide-perli
    - The results can be seen in the [output.txt file](https://github.com/davide-perli/App-clust3r/blob/main/output.txt)
    - Total average time for processing all data in my case: 32 minutes
    - Amount of URLs processed: 4384, but 968 of them were exact duplicates so they were dropped immediately after opening the parquet
-   - Number of failed icons/logos: 32 (of course some sites I couldn't get a logo/icon, but they are given one by default, the planet in shades of gray). This is due to the fact that I either couldn't process them or the fact that they changed the link for the logo leaving the old one behind which contained a blank white image, error 404 redirect pages, or redirect to the main page.
+   - Number of failed icons/logos: 36 (of course some sites I couldn't get a logo/icon, but they are given one by default, the planet in shades of gray). This is due to the fact that I either couldn't process them or the fact that they changed the link for the logo leaving the old one behind which contained a blank white image, error 404 redirect pages, or redirect to the main page.
    - All of them were compared and grouped, but the comparison mode is subjective and not quite optimal since similarity can vary: similarity by color, shape, style, design, etc.
